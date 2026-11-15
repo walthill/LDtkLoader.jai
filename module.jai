@@ -536,6 +536,14 @@ LDtk_FieldInstance_Strings :: struct {
     size: int;
 }
 
+LDtk_FieldInstance_Tiles :: struct {
+    tileId: int;
+    srcX: int;
+    srcY: int;
+    width: int;
+    height: int;
+}
+
 LDtk_FieldInstance :: struct {
     identifier: string;
     type: string;
@@ -543,6 +551,7 @@ LDtk_FieldInstance :: struct {
     floats: [..] LDtk_FieldInstance_Floats;
     ints: [..] LDtk_FieldInstance_Ints;
     strings: [..] LDtk_FieldInstance_Strings;
+    tiles: [..] LDtk_FieldInstance_Tiles;
     defUid: int;
     size: int;
 }
@@ -613,6 +622,7 @@ LDTK_FIELD_TYPE_STRING        :: "String";
 LDTK_FIELD_TYPE_LOCAL_ENUM    :: "LocalEnum";
 LDTK_FIELD_TYPE_COLOR         :: "Color";
 LDTK_FIELD_TYPE_POINT         :: "Point";
+LDTK_FIELD_TYPE_TILE          :: "Tile";
 LDTK_FIELD_TYPE_FILE_PATH     :: "FilePath";
 LDTK_FIELD_TYPE_ARRAY_INT     :: "Array<Int>";
 LDTK_FIELD_TYPE_ARRAY_FLOAT   :: "Array<Float>";
@@ -954,6 +964,19 @@ import_levels :: () {
                                             pt.check = 1;
                                             pt.size = 1;
                                             array_add(*fi.points, pt);
+                                        }
+                                    } else if equal(fi.type, LDTK_FIELD_TYPE_TILE) { 
+                                        value_obj := ldtk_json_object_get(f_obj, "__value");
+                                        if value_obj.type == .OBJECT {
+                                            v_obj := ldtk_json_object(value_obj);
+                                            fi.size = 1;
+                                            tile: LDtk_FieldInstance_Tiles;
+                                            tile.tileId = cast(int)ldtk_json_object_get_number(v_obj, "tilesetUid");
+                                            tile.srcX = cast(int)ldtk_json_object_get_number(v_obj, "x");
+                                            tile.srcY = cast(int)ldtk_json_object_get_number(v_obj, "y");
+                                            tile.width = cast(int)ldtk_json_object_get_number(v_obj, "w");
+                                            tile.height = cast(int)ldtk_json_object_get_number(v_obj, "h");
+                                            array_add(*fi.tiles, tile);
                                         }
                                     } else if equal(fi.type, LDTK_FIELD_TYPE_STRING) || equal(fi.type, LDTK_FIELD_TYPE_COLOR) || equal(fi.type, LDTK_FIELD_TYPE_FILE_PATH) || (fi.type.count >= 9 && equal(slice(fi.type, 0, 9), LDTK_FIELD_TYPE_LOCAL_ENUM)) {
                                         fi.size = 1;
